@@ -1,24 +1,21 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="./">
+<html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The enb command-line tools &mdash; Experiment Notebook (enb) MIT License documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=c824535d" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="_static/css/enb-rtd.css?v=4047c182" />
-
-  
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/enb-rtd.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5d056567"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,19 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="index.html" class="icon icon-home">
-            Experiment Notebook (enb)
-              <img src="_static/enb_logo_small.png" class="logo" alt="Logo"/>
+            <a href="index.html" class="icon icon-home"> Experiment Notebook (enb)
+            <img src="_static/enb_logo_small.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                v1.0.4
+                v1.0.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -97,7 +90,7 @@
            <div itemprop="articleBody">
              
   <section id="the-enb-command-line-tools">
-<h1>The <cite>enb</cite> command-line tools<a class="headerlink" href="#the-enb-command-line-tools" title="Link to this heading"></a></h1>
+<h1>The <cite>enb</cite> command-line tools<a class="headerlink" href="#the-enb-command-line-tools" title="Permalink to this headline"></a></h1>
 <p><a class="reference internal" href="api/enb.html#module-enb" title="enb"><code class="xref py py-mod docutils literal notranslate"><span class="pre">enb</span></code></a> is friendly with the command line interface (CLI). Two main ways of using the CLI
 with enb:</p>
 <ul class="simple">
@@ -106,10 +99,12 @@ with enb:</p>
 </ul>
 <p>Each way is explored in the following sections</p>
 <section id="the-enb-program">
-<h2>The <cite>enb</cite> program<a class="headerlink" href="#the-enb-program" title="Link to this heading"></a></h2>
+<h2>The <cite>enb</cite> program<a class="headerlink" href="#the-enb-program" title="Permalink to this headline"></a></h2>
 <p>If you installed <cite>enb</cite>, most likely you can run <cite>enb</cite> from your command line and access its main CLI.
 An example output of running <cite>enb help</cite> (to display usage help) is shown next:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>usage: enb [-h] {plugin,show,help} ...
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>............... [ Powered by enb (Experiment NoteBook) v1.0.1 ] ................
+
+usage: enb [-h] {plugin,show,help} ...
 
 CLI to the experiment notebook (enb) framework (see https://github.com/miguelinux314/experiment-notebook).
 
@@ -128,12 +123,14 @@ subcommands:
 </pre></div>
 </div>
 <section id="listing-available-plugins-and-templates">
-<h3>Listing available plugins and templates<a class="headerlink" href="#listing-available-plugins-and-templates" title="Link to this heading"></a></h3>
+<h3>Listing available plugins and templates<a class="headerlink" href="#listing-available-plugins-and-templates" title="Permalink to this headline"></a></h3>
 <p>The <a class="reference internal" href="api/enb.html#module-enb" title="enb"><code class="xref py py-mod docutils literal notranslate"><span class="pre">enb</span></code></a> library comes packed with several plugins and templates. To access them, one can use <cite>enb pluginp</cite>.
 In particular, <cite>enb plugin -h</cite> shows all available options.</p>
 <p>Use <cite>enb plugin list</cite> to get a list of all available plugins and templates. You can add extra parameters for filtering
 and/or <cite>-v</cite> for extra details.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Showing 49 plugins.
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>............... [ Powered by enb (Experiment NoteBook) v1.0.1 ] ................
+
+Showing 45 plugins.
 You can add arguments to filter this list, and/or use the --exclude argument.
 Add -v for extra information on the listed plugins.
 
@@ -144,9 +141,7 @@ Add -v for extra information on the listed plugins.
                ccsds122x1 :: Wrappers for CCSDS 122.1 (privative).
                ccsds124x0 :: Wrappers for CCSDS 124.0-B-1 (privative).
            cluster-config :: Template of a CSV configuration file for enb clusters.
-              colors-dark :: Color template for dark background terminals.
-           colors-default :: Default color template for light or dark background terminals.
-                  emporda :: Wrapper for the emporda codec (AC and CCSDS versions).
+                  emporda :: Wrapper for the emporda codec.
                   enb.ini :: Copy a full enb.ini configuration in the destination project folder.
  entropy-codec-comparison :: Template for the comparison of entropy codecs.
                experiment :: Generic experiment template. Run `enb plugin list experiment` for specific experiment templates.
@@ -164,7 +159,6 @@ Add -v for extra information on the listed plugins.
                      jpeg :: Reference JPEG and JPEG-LS implementation.
                    jpegxl :: Wrapper for a reference JPEG-XL implementation.
                    kakadu :: Wrappers for Kakadu JPEG 2000 (privative).
-                       lc :: LC Framework codec generation and application tools.
                      lcnl :: Wrappers for LCNL CCSDS 123.0-B-2 (privative).
      lossless-compression :: Template for lossless compression experiments.
         lossy-compression :: Template for lossy compression experiments.
@@ -177,7 +171,6 @@ Add -v for extra information on the listed plugins.
                   montsec :: Wrapper for the montsec codec.
                     ndzip :: Wrapper for ndzip.
   port-experiment-example :: Self-contained port scanning experiment example.
-                      rle :: Run-Length Encoding codec.
                      spdp :: Wrapper for the spdp codec.
                     speck :: Wrapper for the SPECK codec.
               test-codecs :: Install all codec plugins verify their availability.
@@ -190,10 +183,10 @@ Add -v for extra information on the listed plugins.
 The following plugin tags have been defined and can be used for filtering:
 
   - documentation    (  8 plugins) Documentation examples referenced in the user manual.
-  - codec            ( 33 plugins) Data compression/decompression class definitions.
-  - data compression ( 38 plugins) Data compression tools.
-  - template         ( 14 plugins) Templates formatteable into the installation dir.
-  - project          ( 11 plugins) Project templates, including configuration files.
+  - codec            ( 31 plugins) Data compression/decompression class definitions.
+  - data compression ( 36 plugins) Data compression tools.
+  - template         ( 12 plugins) Templates formatteable into the installation dir.
+  - project          (  9 plugins) Project templates, including configuration files.
   - test             (  1  plugin) Plugins for testing purposes.
   - image            ( 19 plugins) Tools for image processing (including compression and analysis).
   - privative        (  6 plugins) Plugins requiring additional privative software.
@@ -203,9 +196,9 @@ Run with -v for authorship and additional information, with -h for full help.
 </div>
 </section>
 <section id="plugin-and-template-installation">
-<h3>Plugin and template installation<a class="headerlink" href="#plugin-and-template-installation" title="Link to this heading"></a></h3>
+<h3>Plugin and template installation<a class="headerlink" href="#plugin-and-template-installation" title="Permalink to this headline"></a></h3>
 <p>To install a plugin or template, use the following syntax</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>enb<span class="w"> </span>plugin<span class="w"> </span>install<span class="w"> </span>&lt;plugin-name&gt;<span class="w"> </span>&lt;destination-folder&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>enb plugin install &lt;plugin-name&gt; &lt;destination-folder&gt;
 </pre></div>
 </div>
 <p>For example, <cite>enb plugin install zip ./codecs/zip_codecs</cite> should produce something similar to:</p>
@@ -227,7 +220,7 @@ to automatically install (unless already installed) and import a plugin, e.g.,</
 <span class="sig-prename descclassname"><span class="pre">enb.plugins.</span></span><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">automatic_import</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Install an Installable by name into target_dir.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> – name of the installable (e.g., plugin) to be installed. Run <cite>enb plugin list</cite> in the CLI
 to get a list of all available installables.</p></li>
@@ -244,7 +237,7 @@ to get a list of all available installables.</p></li>
 </section>
 </section>
 <section id="cli-with-scripts-using-enb">
-<h2>CLI with scripts using <cite>enb</cite><a class="headerlink" href="#cli-with-scripts-using-enb" title="Link to this heading"></a></h2>
+<h2>CLI with scripts using <cite>enb</cite><a class="headerlink" href="#cli-with-scripts-using-enb" title="Permalink to this headline"></a></h2>
 <p>If your script includes <cite>import enb</cite>, then you can pass <cite>–option=value</cite> arguments when invoking
 it to set the values of <cite>enb.config.options</cite>.</p>
 <p>In addition, to get a list of all of all available options, you can run your script with the <cite>-h</cite>
@@ -272,6 +265,7 @@ options. An example option of this is shown next:</p>
                          [--no_remote_mount_needed]
                          [--selected_log_level {core,error,warning,message,verbose,informative,debug}]
                          [--default_print_level {core,error,warning,message,verbose,informative,debug}]
+                         [--log_print {True,False}]
                          [--log_level_prefix {True,False}]
                          [--show_prefix_level {core,error,warning,message,verbose,informative,debug}]
 
@@ -452,6 +446,10 @@ Logging Options:
                         Selects the default log level equivalent to a regular
                         print-like message. It is most effective when combined
                         with log_print set to True. (default: message)
+  --log_print {True,False}
+                        If True, the default print command is substituted by
+                        enb&#39;s logging system when enb is imported. (default:
+                        True)
   --log_level_prefix {True,False}
                         If True, logged messages include a prefix, e.g., based
                         on their priority. (default: True)

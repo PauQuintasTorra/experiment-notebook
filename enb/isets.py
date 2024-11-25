@@ -217,7 +217,8 @@ def _file_path_to_datatype_dict(file_path, existing_dict=None):
     else:
         enb.logger.warn(f"Warning: cannot find valid data type tag in {base_name=}.")
     assert os.path.getsize(file_path) % existing_dict["bytes_per_sample"] == 0
-    existing_dict["samples"] = os.path.getsize(file_path) // existing_dict["bytes_per_sample"]
+    existing_dict["samples"] = os.path.getsize(file_path) // existing_dict[
+        "bytes_per_sample"]
     return existing_dict
 
 
@@ -247,11 +248,7 @@ class ImageGeometryTable(sets.FilePropertiesTable):
         else:
             raise Exception(
                 f"{self.__class__.__name__}: "
-                f"cannot determine the value of column {repr(_column_name)} for {repr(file_path)}. "
-                f"Do your files contain information about geometry and sample format in the name? "
-                f"These are needed for raw files. Please visit "
-                f"https://miguelinux314.github.io/experiment-notebook/lossless_compression_example.html#data-curation "
-                f"for more information.")
+                f"unknown column {repr(_column_name)} for file {repr(file_path)}")
 
     @atable.column_function("float", label="Floating point data?")
     def set_float(self, file_path, row):
@@ -397,7 +394,7 @@ class ImagePropertiesTable(ImageGeometryTable):
         atable.ColumnProperties(f"entropy_{bytes_per_sample}B_bps",
                                 label=f"Entropy (bits, {bytes_per_sample}-byte samples)",
                                 plot_min=0, plot_max=8 * bytes_per_sample)
-        for bytes_per_sample in (1, 2, 4)])
+        for bytes_per_sample in (1, 2)])
     def set_file_entropy(self, file_path, row):
         """Set the zero-order entropy of the data in file_path for 1, 2 and 4
         bytes per sample in entropy_1B_bps, entropy_2B_bps and

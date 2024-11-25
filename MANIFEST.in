@@ -56,6 +56,7 @@ include enb/plugins/plugin_ccsds124/.gitignore
 include enb/plugins/plugin_ccsds124/__plugin__.py
 include enb/plugins/plugin_ccsds124/README.md
 include enb/plugins/plugin_emporda/emporda_codec.py
+include enb/plugins/plugin_emporda/emporda.jar
 include enb/plugins/plugin_emporda/__plugin__.py
 include enb/plugins/plugin_fapec/fapec_codec.py
 include enb/plugins/plugin_fapec/.gitignore
@@ -129,9 +130,6 @@ include enb/plugins/plugin_kakadu/.gitignore
 include enb/plugins/plugin_kakadu/kakadu_codec.py
 include enb/plugins/plugin_kakadu/__plugin__.py
 include enb/plugins/plugin_kakadu/README.md
-include enb/plugins/plugin_lc_framework/lc_codec.py
-include enb/plugins/plugin_lc_framework/Makefile.linux
-include enb/plugins/plugin_lc_framework/__plugin__.py
 include enb/plugins/plugin_lcnl/.gitignore
 include enb/plugins/plugin_lcnl/lcnl_codecs.py
 include enb/plugins/plugin_lcnl/__plugin__.py

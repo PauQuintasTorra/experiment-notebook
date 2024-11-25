@@ -7,4 +7,3 @@
 
 
 pip install sphinxcontrib-programoutput sphinx_rtd_theme pygments-zenburn
-apt install python3-sphinxcontrib.bibtex

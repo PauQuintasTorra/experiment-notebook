@@ -1,4 +1,4 @@
-# > CHANGELOG
+# CHANGELOG
 
 The following updates have been highlighted for each release. Note that `enb` employs a `MAYOR`.`MINOR`.`REVISION`
 format. Given a code initially developed for one `enb` version and then executed in another (newer) version:
@@ -12,67 +12,12 @@ format. Given a code initially developed for one `enb` version and then executed
 - If `MAYOR` is larger, specific code changes might be needed for your code. So far, a single `MAYOR` version (0) is
   used. The next mayor version (1) is expected to be backwards compatible with the latest release of the 0 mayor branch.
 
-# Latest stable version: 2024/10/28 v1.0.5
-
-Improvements:
-
-- Fixed a problem that prevented values in .ini files from being recognized
-  (persistence_dir, base_dataset_dir, analysis_dir, output_plots_dir)
-- Fixed regression bug that prevented some columns from being populated if they were defined after the table's
-  persistence CSV file was created.
-- The enb.ini plugin is now installed with all options commented-out, ready for the user to modify at will
-
-Deprecations:
-- Fixed enb.atable.ATable's typo: dataset_files_extension becomes dataset_file_extension.
-  The old name will be kept for now as a deprecated property.
-
-# Version history
-
-## 2024/9/8 v1.0.4
-
-Improvements:
-
-- Enhanced documentation explaining how to store compressed and reconstructed files in compression experiments
-  (see https://miguelinux314.github.io/experiment-notebook/lossless_compression_example.html#saving-the-compressed-and-or-reconstructed-files).
-- Improved error handling of images files with non-compliant names.
-- Fixed some external library warnings due to API changes (numpy, pandas)
-
-## 2024/5/19 v1.0.3
-
-Improvements:
-
-- When failing to build/install a plugin with `enb plugin install <plugin_name> <destination>`, a copy of the
-  incomplete installation dir is copied to a temporary dir so that you can attempt a manual installation.
-
-- The `corpus` column now treats symbolic links within the dataset folder as regular files.
-  This way:
-    - One can arrange data samples from multiple sources and still have a consistent corpus name.
-    - One can change the name of a symbolic link, and that name will be employed within the experiments.
-    - One can mix symbolic links and regular files as needed.
-      For instance, the following dataset folder setup (`->` indicates a symbolic link):
-        * Would assign corpus `"C1"` to samples `A.txt` and `B.txt`, and `"C2"` to samples `B.txt` and `C.txt`,
-          regardless of the physical folders where those samples are.
-        * The data in `/home/shared/altsource/some_name.txt` would be known as `datasets/C1/B.txt` to the experiment.
-        * File `datasets/E.txt` is not a symbolic link and is treated normally.
-  ```
-  - datasets/
-    - C1
-      - A.txt -> /data/source1/A.txt
-      - B.txt -> /home/shared/altsource/some_name.txt
-    - C2
-      - C.txt -> /home/shared/altsource/C.txt
-      - D.txt -> /data/source2/D.txt
-      - E.txt  
-  ```
-
-- Added `lc`, a lossless codec that wraps the LC Framework functionality.
-
-## 2024/02/06 v1.0.2
+# Latest stable version: 2024/02/06 v1.0.2
 
 Improvements:
 
 - Enhanced progress reporting of parallel row computation. You can test it in your scripts invoking them with
-  `-v` or `-vv` or, equivalently, adding `enb.config.options.verbose = 1` or `enb.config.options.verbose = 2`
+  `-v` or `-vv` or, equivalently, adding `enb.config.options.verbose = 1` or `enb.config.options.verbose = 2` 
   to your code.
 
 - Messages displayed with `enb.logger` (and, by default also with `print`) are now colorized based on their priority.
@@ -83,7 +28,7 @@ Improvements:
 - Added the `compression_results` and `decompression_results` properties to `enb.icompression.CompressionExperiment`,
   which are `enb.icompression.CompressionResults` and `enb.icompression.DecompressionResults` instances, respectively.
   These can be called from functions that set row columns of compression experiment subclasses. For instance,
-  they can be used to access the original, compressed and/or reconstructed file paths, e.g.,
+  they can be used to access the original, compressed and/or reconstructed file paths, e.g., 
   ```
   import enb
   
@@ -94,23 +39,25 @@ Improvements:
           with open(self.compression_results.compressed_path, "r") as compressed_file:
               return int(compressed_file.read(1))
   ```
-
+  
 - Added the `grid_alpha`, `subgrid_alpha` and `tick_direction` to the `enb.aanalysis.Analyzer` class.
   These parameters can also be managed with `.ini` files (see the `enb.ini` plugin), or passed directly
   to the `get_df` method of Analyzer subclasses.
 
 Bug fixes:
 
-- Prevented spurious exceptions while shutting down, which could happen when an `enb.atable.ATable` instance
+- Prevented spurious exceptions while shutting down, which could happen when an `enb.atable.ATable` instance 
   is created but its `get_df` method is not called.
 
-- Using relative imports (e.g., of plugins or other modules within the project folder) now works for remote
-  ray clusters. A small refactoring related to identifying local and remote nodes, as well as adapting
+- Using relative imports (e.g., of plugins or other modules within the project folder) now works for remote 
+  ray clusters. A small refactoring related to identifying local and remote nodes, as well as adapting 
   paths relative to the remote mount point when needed has been introduced, too.
-
+  
 - Added missing `h5py` dependency to `setup.py`.
 
-## 2024/01/01 v1.0.1
+# Version history
+
+# 2024/01/01 v1.0.1
 
 After 4 years of development and a lot of user feedback, switched from beta status to stable/production!
 

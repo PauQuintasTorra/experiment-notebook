@@ -181,22 +181,10 @@ class Installable(metaclass=InstallableMeta):
             cls.build(installation_dir=installation_dir)
             cls.report_successful_installation(installation_dir=installation_dir)
         except Exception as ex:
-            enb.logger.error(f"{ex}")
             if not installation_dir_existed:
-                copy_dir = os.path.abspath(os.path.join(
-                    enb.config.options.base_tmp_dir, os.path.basename(installation_dir)))
-                shutil.rmtree(copy_dir, ignore_errors=True)
-                shutil.copytree(installation_dir, copy_dir)
-                enb.logger.warn(f"Removing incomplete installation dir {repr(installation_dir)}.\n"
-                                 f"A copy has been made into {repr(copy_dir)} in case you want "
-                                 f"to attempt manual building of the plugin.\n"
-                                 f"You would then need to copy that folder into "
-                                f"{repr(installation_dir)} to complete the installation.")
+                enb.logger.verbose(f"Removing incomplete installation dir {repr(installation_dir)}.")
                 shutil.rmtree(installation_dir, ignore_errors=True)
-            else:
-                enb.logger.warn(f"The destination dir {repr(installation_dir)} already existed, "
-                                "so the incomplete installation files have to be manually removed "
-                                "if needed.")
+            raise ex
 
     @classmethod
     def build(cls, installation_dir):
@@ -301,7 +289,9 @@ def install(name, target_dir=None, overwrite=False, automatic_import=True):
     :param automatic_import: If True, the installable is imported as a module.
     """
     target_dir = os.path.join("plugins", name) if target_dir is None else target_dir
-    if overwrite or not os.path.exists(target_dir):
+    if overwrite:
+        shutil.rmtree(target_dir, ignore_errors=True)
+    if not os.path.exists(target_dir):
         installable = get_installable_by_name(name=name)
         installable.install(installation_dir=target_dir, overwrite_destination=False)
     if automatic_import:

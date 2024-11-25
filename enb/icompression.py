@@ -538,8 +538,7 @@ class GiciLibHelper:
             if original_file_info["signed"]:
                 return "4"
             else:
-                raise ValueError(
-                    "32-bit samples are supported, but they must be signed.")
+                return "4"
         else:
             raise ValueError(
                 f"Invalid data type, not supported by "

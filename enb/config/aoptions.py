@@ -13,7 +13,7 @@ Option configuration in enb is centralized through enb.config.options. Several k
 
     - Scripts using enb (host scripts) may alter values in enb.config.options, e.g., before calling enb methods.
       Properties are accessed and modified with `enb.config.options.property`
-      and `enb.config.options.property = value`, respectively. You may want to use the `from enb.config import options` line
+      and `enb.config.property = value`, respectively. You may want to use the `from enb.config import options` line
       in your host scripts to enable less verbosity.
 
     - The CLI can be used to set initial values of enb.config.options properties using `-*` and `--*` arguments.
@@ -212,32 +212,28 @@ class DirOptions:
     """Options regarding default data directories.
     """
 
-    @OptionsBase.property(action=_singleton_cli.ReadableDirAction, 
-                          default=calling_script_dir)
+    @OptionsBase.property(action=_singleton_cli.ReadableDirAction, default=calling_script_dir)
     def project_root(self, value):
         """Project root path. It should not normally be modified.
         """
         _singleton_cli.ReadableDirAction.assert_valid_value(value)
 
-    @OptionsBase.property(action=_singleton_cli.ReadableOrCreableDirAction, 
-                          default=None)
+    @OptionsBase.property(action=_singleton_cli.ReadableOrCreableDirAction, default=default_base_dataset_dir)
     def base_dataset_dir(self, value):
         """Directory to be used as source of input files for indices in the get_df method
         of tables and experiments.
 
         It should be an existing, readable directory.
         """
-        value = value or ini.get_key("enb.config.options", "base_dataset_dir")
         value = self.normalize_dir_value(value=value)
         _singleton_cli.ReadableOrCreableDirAction.assert_valid_value(value)
         return value
 
     @OptionsBase.property(action=_singleton_cli.WritableOrCreableDirAction,
-                          default=None)
+                          default=default_persistence_dir)
     def persistence_dir(self, value):
         """Directory where persistence files are to be stored.
         """
-        value = value or ini.get_key("enb.config.options", "persistence_dir")
         value = self.normalize_dir_value(value=value)
         _singleton_cli.WritableOrCreableDirAction.assert_valid_value(value)
         return value
@@ -245,20 +241,18 @@ class DirOptions:
     # Reconstructed version dir
     @OptionsBase.property(action=_singleton_cli.WritableOrCreableDirAction)
     def reconstructed_dir(self, value):
-        """Base directory where a copy of the reconstructed versions of data are to be stored.
+        """Base directory where reconstructed versions are to be stored.
         """
-        value = value or ini.get_key("enb.config.options", "reconstructed_dir")
         value = self.normalize_dir_value(value=value)
         _singleton_cli.WritableOrCreableDirAction.assert_valid_value(value)
         return value
 
     # Versioned data dir
     @OptionsBase.property(action=_singleton_cli.WritableOrCreableDirAction,
-                          default=None)
+                          default=default_base_dataset_dir)
     def base_version_dataset_dir(self, value):
         """Base dir for versioned folders.
         """
-        value = value or ini.get_key("enb.config.options", "version_dataset_dir")
         value = self.normalize_dir_value(value=value)
         _singleton_cli.WritableOrCreableDirAction.assert_valid_value(value)
         return value
