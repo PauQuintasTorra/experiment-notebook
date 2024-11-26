@@ -501,6 +501,121 @@ class QuantizationWrapperCodec(NearLosslessCodec):
         return f"{self.codec.label}, Q$_\\mathrm{{step}}=${self.param_dict['qstep']}"
 
 
+class LookUpTableWrapperCodec(NearLosslessCodec):
+    """Perform dynamic lookup table transformations before compressing and after decompressing 
+    with a wrapped codec instance. The lookup table is generated based on the image data 
+    and its bit depth.
+    """
+
+    def __init__(self, codec: AbstractCodec, sorted: bool, max_bit_depth=16):
+        """
+        :param codec: The codec instance used to compress and decompress the transformed data.
+        """
+        super().__init__(param_dict=dict(codec_name=codec.name, sorted=sorted, max_bit_depth=16))
+        self.codec = codec
+
+    def _calculate_unique_values(self, image_array, sorted = False):
+        """Calculate the unique values of the original matrix, sorted by frequency if required."""
+        unique_values, counts = np.unique(image_array, return_counts=True)
+        if sorted:
+            unique_values = unique_values[np.argsort(counts)[::-1]]
+
+        return unique_values
+
+
+    def _from_lookup_to_inverse(self, lookup_table):
+        """ """
+        inverse_lookup_table = np.empty(len(lookup_table), dtype=lookup_table.dtype)
+        for index, value in enumerate(lookup_table):
+            inverse_lookup_table[index] = value
+        return inverse_lookup_table
+
+
+    def compress(self, original_path: str, compressed_path: str, original_file_info=None):
+        with tempfile.TemporaryDirectory(dir=enb.config.options.base_tmp_dir) as tmp_dir:
+            image_array = enb.isets.load_array_bsq(original_path)
+
+            unique_values = self._calculate_unique_values(image_array)
+            lookup_table = {value: index for index, value in enumerate(unique_values)}
+
+            transformed_array = np.vectorize(lookup_table.get)(image_array)
+
+            transformed_bits = int(np.ceil(np.log2(len(unique_values))))
+
+            original_file_info = original_file_info.copy()
+            
+            signed = original_file_info["signed"]
+            byps = original_file_info["bytes_per_sample"]
+            big_endian = original_file_info["big_endian"]
+
+            original_file_info["signed"] = False
+            original_file_info["bytes_per_sample"] = 1 if transformed_bits <= 8 else 2 if transformed_bits <= 16 else 4
+            original_file_info["big_endian"] = True
+
+            dtype = ">u"  + str(original_file_info["bytes_per_sample"])
+
+            transformed_path = os.path.join(tmp_dir, os.path.basename(original_path))
+            enb.isets.dump_array_bsq(transformed_array.astype(dtype), transformed_path)
+
+            compressed_temp_path = os.path.join(tmp_dir, "compressed_data")
+            self.codec.compress(transformed_path, compressed_temp_path, original_file_info)
+
+            with open(compressed_path, "ab") as f_out:
+                np.array([len(unique_values), signed, byps, big_endian], dtype=np.int32).tofile(f_out)
+                unique_values.astype(image_array.dtype).tofile(f_out)
+
+                with open(compressed_temp_path, "rb") as compressed_temp:
+                    f_out.write(compressed_temp.read())
+
+            os.remove(compressed_temp_path)
+            os.remove(transformed_path)
+
+
+
+    def decompress(self, compressed_path, reconstructed_path, original_file_info=None):
+        with tempfile.TemporaryDirectory(dir=enb.config.options.base_tmp_dir) as tmp_dir:
+            with open(compressed_path, "rb") as f_in:
+
+                lut_size = np.fromfile(f_in, dtype=np.int32, count=1)[0]
+                signed = np.fromfile(f_in, dtype=np.int32, count=1)[0]
+                byps = np.fromfile(f_in, dtype=np.int32, count=1)[0]
+                big_endian = np.fromfile(f_in, dtype=np.int32, count=1)[0]
+
+                dtype = ">" if big_endian else "<"
+                dtype += "i" if signed else "u"
+                dtype += str(byps)
+
+                lookup_table = np.fromfile(f_in, dtype=dtype, count=lut_size)
+                compressed_data = f_in.read()
+
+            intermediate_compressed_path = os.path.join(tmp_dir, "compressed_data")
+            with open(intermediate_compressed_path, "wb") as f_out:
+                f_out.write(compressed_data)
+
+            decompressed_path = os.path.join(tmp_dir, os.path.basename(reconstructed_path))
+            self.codec.decompress(intermediate_compressed_path, decompressed_path, original_file_info)
+
+            transformed_bits = int(np.ceil(np.log2(lut_size)))
+
+            transformed_array = enb.isets.load_array_bsq(decompressed_path, original_file_info, dtype=">u" + str( 1 if transformed_bits <= 8 else 2 if transformed_bits <= 16 else 4))
+
+            inverse_lookup_table = self._from_lookup_to_inverse(lookup_table)
+            reconstructed_array = np.take(inverse_lookup_table, transformed_array)
+
+            enb.isets.dump_array_bsq(reconstructed_array.astype(dtype), reconstructed_path)
+
+    @property
+    def name(self):
+        """Return the codec name including the dynamic lookup table."""
+        return f"{self.codec.name}_dynamic_lookup_table"
+
+    @property
+    def label(self):
+        """Return the codec label including the dynamic lookup table."""
+        return f"{self.codec.label} with Dynamic Lookup Table"
+
+
+
 class JavaWrapperCodec(WrapperCodec):
     """Wrapper for `*.jar` codecs. The compression and decompression
     parameters are those that need to be passed to the 'java' command.
