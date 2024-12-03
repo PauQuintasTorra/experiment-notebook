@@ -551,13 +551,16 @@ class LookUpTableWrapperCodec(NearLosslessCodec):
             original_file_info["signed"] = False
             original_file_info["bytes_per_sample"] = 1 if transformed_bits <= 8 else 2 if transformed_bits <= 16 else 4
             original_file_info["big_endian"] = True
+            original_file_info["dtype"] = ">u" + str(original_file_info["bytes_per_sample"])
 
-            dtype = ">u"  + str(original_file_info["bytes_per_sample"])
+            #updated_info = "_u" + str(original_file_info["bytes_per_sample"] * 8) + "be-"
+            #updated_info += f"{original_file_info['component_count']}x{original_file_info['height']}x{original_file_info['width']}.raw" \
 
             transformed_path = os.path.join(tmp_dir, os.path.basename(original_path))
-            enb.isets.dump_array_bsq(transformed_array.astype(dtype), transformed_path)
+            enb.isets.dump_array_bsq(transformed_array.astype(original_file_info["dtype"]), transformed_path)
 
             compressed_temp_path = os.path.join(tmp_dir, "compressed_data")
+
             self.codec.compress(transformed_path, compressed_temp_path, original_file_info)
 
             with open(compressed_path, "ab") as f_out:
@@ -591,11 +594,17 @@ class LookUpTableWrapperCodec(NearLosslessCodec):
             intermediate_compressed_path = os.path.join(tmp_dir, "compressed_data")
             with open(intermediate_compressed_path, "wb") as f_out:
                 f_out.write(compressed_data)
+            
+
+            original_file_info = original_file_info.copy()
+
+            transformed_bits = int(np.ceil(np.log2(len(lookup_table))))
+            original_file_info["signed"] = False
+            original_file_info["bytes_per_sample"] = 1 if transformed_bits <= 8 else 2 if transformed_bits <= 16 else 4
+            original_file_info["big_endian"] = True
 
             decompressed_path = os.path.join(tmp_dir, os.path.basename(reconstructed_path))
             self.codec.decompress(intermediate_compressed_path, decompressed_path, original_file_info)
-
-            transformed_bits = int(np.ceil(np.log2(lut_size)))
 
             transformed_array = enb.isets.load_array_bsq(decompressed_path, original_file_info, dtype=">u" + str( 1 if transformed_bits <= 8 else 2 if transformed_bits <= 16 else 4))
 
