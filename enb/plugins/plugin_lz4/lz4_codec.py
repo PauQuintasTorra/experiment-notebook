@@ -20,7 +20,7 @@ class Lz4(enb.icompression.LosslessCodec, enb.icompression.NearLosslessCodec, en
         """
         assert (compression_level >= 1) and (compression_level <= 12), \
             f"The compression level must be an integer value between [1 and 12]"
-        assert (threads >= 1) \
+        assert (threads >= 1), \
             f"Threads must be minimum 1"
         super().__init__(compressor_path=lz4_binary,
                          decompressor_path=lz4_binary,
