@@ -8,7 +8,7 @@ import os
 from enb import icompression
 
 
-class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec, icompression.PNGWrapperCodec):
+class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec, icompression.PGMWrapperCodec):
     def __init__(self, quality_0_to_100=100, compression_level=7,
                  lossless=True,
                  compressor_path=os.path.join(os.path.dirname(__file__), "cjxl"),
@@ -26,7 +26,7 @@ class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec, icompression.
         assert 3 <= compression_level <= 9
         assert 0 <= quality_0_to_100 <= 100
         assert (not lossless) or quality_0_to_100 == 100, f"Lossless mode can only be employed with quality 100"
-        icompression.PNGWrapperCodec.__init__(
+        icompression.PGMWrapperCodec.__init__(
             self, compressor_path=compressor_path, decompressor_path=decompressor_path,
             param_dict=dict(
                 quality_0_to_100=quality_0_to_100,
