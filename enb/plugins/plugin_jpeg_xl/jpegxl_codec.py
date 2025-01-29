@@ -5,10 +5,13 @@ __author__ = "Ashwin Kumar Gururajan <ashwin.gururajan@uab.cat>"
 __since__ = "2021/02/15"
 
 import os
+import shutil
+import enb
 from enb import icompression
+import numpy as np
+from imagecodecs import jpegxl_encode, jpegxl_decode
 
-
-class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec, icompression.PGMWrapperCodec):
+class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec):
     def __init__(self, quality_0_to_100=100, compression_level=7,
                  lossless=True,
                  compressor_path=os.path.join(os.path.dirname(__file__), "cjxl"),
@@ -26,26 +29,26 @@ class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec, icompression.
         assert 3 <= compression_level <= 9
         assert 0 <= quality_0_to_100 <= 100
         assert (not lossless) or quality_0_to_100 == 100, f"Lossless mode can only be employed with quality 100"
-        icompression.PGMWrapperCodec.__init__(
-            self, compressor_path=compressor_path, decompressor_path=decompressor_path,
-            param_dict=dict(
-                quality_0_to_100=quality_0_to_100,
-                compression_level=compression_level,
-                lossless=lossless),
-            output_invocation_dir=None)
 
-    def get_compression_params(self, original_path, compressed_path, original_file_info):
-        assert original_file_info["component_count"] == 1, \
-            f"Only one component seems to be supported by {self.__class__.__name__}"
-        assert original_file_info["big_endian"], \
-            f"Only big-endian samples are supported by {self.__class__.__name__}"
+        super().__init__(param_dict=dict(cl=compression_level, quality=quality_0_to_100))
 
-        return f"{original_path} {compressed_path} " \
-               f"-q {self.param_dict['quality_0_to_100']} " \
-               f"-e {self.param_dict['compression_level']}"
 
-    def get_decompression_params(self, compressed_path, reconstructed_path, original_file_info):
-        return f"{compressed_path} {reconstructed_path}"
+    def compress(self, original_path, compressed_path, original_file_info):
+        assert original_file_info["bytes_per_sample"] in [1, 2], \
+            "JPEG XL only supported for 8 or 16 bit images"
+        img = enb.isets.load_array_bsq(
+            file_or_path=original_path, image_properties_row=original_file_info)
+        img = np.moveaxis(img, 0, -1).byteswap().newbyteorder('<')
+        encoded = jpegxl_encode(img, level=self.param_dict["quality"], effort=self.param_dict["cl"])
+        with open(compressed_path, 'wb') as f:
+            f.write(encoded)
+
+    def decompress(self, compressed_path, reconstructed_path, original_file_info=None):
+        with open(compressed_path, 'rb') as f:
+            encoded = f.read()
+        img = jpegxl_decode(encoded)
+        img = np.moveaxis(img, -1, 0).byteswap().newbyteorder(">" if original_file_info["big_endian"] else "<")
+        enb.isets.dump_array_bsq(img, reconstructed_path)
 
     @property
     def label(self):
