@@ -25,16 +25,17 @@ class PGMWrapperCodec(enb.icompression.WrapperCodec):
     # pylint: disable=abstract-method
 
     def compress(self, original_path: str, compressed_path: str, original_file_info=None):
-        assert original_file_info["component_count"] == 1, \
-            "PGM only supported for 1-component images"
         assert original_file_info["bytes_per_sample"] in [1, 2], \
             "PGM only supported for 8 or 16 bit images"
+        assert original_file_info["big_endian"], \
+            f"Only big-endian samples are supported by {self.__class__.__name__}"
         img = enb.isets.load_array_bsq(
             file_or_path=original_path, image_properties_row=original_file_info)
 
-        with tempfile.NamedTemporaryFile(suffix=".pgm", mode="wb") as tmp_file:
 
-            write_pgm(img, original_file_info["bytes_per_sample"], tmp_file.name)
+        with tempfile.NamedTemporaryFile(suffix=".pam", mode="wb") as tmp_file:
+
+            write_pam(img, original_file_info["bytes_per_sample"], tmp_file.name)
 
             compression_results = super().compress(
                 original_path=tmp_file.name,
@@ -49,12 +50,12 @@ class PGMWrapperCodec(enb.icompression.WrapperCodec):
 
     def decompress(self, compressed_path, reconstructed_path,
                    original_file_info=None):
-        with tempfile.NamedTemporaryFile(suffix=".pgm") as tmp_file:
+        with tempfile.NamedTemporaryFile(suffix=".pam") as tmp_file:
             decompression_results = super().decompress(
                 compressed_path=compressed_path,
                 reconstructed_path=tmp_file.name)
             
-            img = read_pgm(tmp_file.name)
+            img = read_pam(tmp_file.name)
             enb.isets.dump_array_bsq(img, file_or_path=reconstructed_path)
 
             drs = self.decompression_results_from_paths(
@@ -168,6 +169,59 @@ def write_ppm(array, bytes_per_sample, output_path):
             f"{(2 ** (8 * bytes_per_sample)) - 1}\n".encode("utf-8"))
         enb.isets.dump_array_bip(
             array=array, file_or_path=output_file, dtype=np.uint8)
+        
+
+def read_pam(input_path, byteorder='>'):
+    """Return image data from a raw PAM file as a numpy array."""
+    with open(input_path, 'rb') as input_file:
+        buffer = input_file.read()
+    
+    try:
+        header_match = re.search(
+            rb"(^P7\n(?:[A-Z]+\s+\d+\n)*ENDHDR\n)", buffer)
+        if not header_match:
+            raise ValueError(f"Not a valid PAM file: '{input_path}'")
+        
+        header = header_match.group(1).decode("utf-8")
+        metadata = dict(re.findall(r"(WIDTH|HEIGHT|DEPTH|MAXVAL) (\d+)", header))
+        
+        width = int(metadata["WIDTH"])
+        height = int(metadata["HEIGHT"])
+        depth = int(metadata["DEPTH"])
+        maxval = int(metadata["MAXVAL"])
+        
+    except (AttributeError, KeyError, ValueError) as ex:
+        raise ValueError(f"Invalid PAM header in '{input_path}'") from ex
+    
+    dtype = 'u1' if maxval < 256 else byteorder + 'u2'
+    offset = len(header_match.group(1))
+    
+    return np.frombuffer(buffer, dtype=dtype, count=width * height * depth, offset=offset)\
+            .reshape((height, width, depth))
+
+
+def write_pam(array, bytes_per_sample, output_path, byteorder=">"):
+    """
+    Write a 3D array indexed with [height, width, channels] into output_path with PAM format.
+    """
+    array = np.squeeze(array)
+    assert bytes_per_sample in [1, 2], f"bytes_per_sample={bytes_per_sample} not supported"
+    assert len(array.shape) == 3, "Only 3D arrays can be output as PAM"
+    assert (array.astype(int) - array < 2 * sys.float_info.epsilon).all(), "Only integer values can be stored in PAM"
+    assert array.min() >= 0, "Only positive values can be stored in PAM"
+    assert array.max() <= 2 ** (8 * bytes_per_sample) - 1, (
+        f"All values should be representable in {bytes_per_sample} bytes "
+        f"(max is {array.max()}, bytes_per_sample={bytes_per_sample})"
+    )
+    
+    height, width, depth = array.shape
+    maxval = (2 ** (8 * bytes_per_sample)) - 1
+    
+    with open(output_path, "wb") as output_file:
+        output_file.write(
+            f"P7\nWIDTH {width}\nHEIGHT {height}\nDEPTH {depth}\nMAXVAL {maxval}\nTUPLTYPE UNKNOWN\nENDHDR\n".encode("utf-8")
+        )
+        array.astype(f"{byteorder}u{bytes_per_sample}").tofile(output_file)
 
 
 def pgm_to_raw(input_path, output_path):
