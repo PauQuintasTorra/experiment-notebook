@@ -1,27 +1,3 @@
-
-CFLAGS += -std=gnu++11 -Wall -Wextra -Wcast-qual -Wcast-align -Wstrict-aliasing=1 -Wswitch-enum -Wundef -pedantic  -Wfatal-errors -Werror
-
-CFLAGS += -I./src
-
-CFLAGS += `pkg-config opencv --cflags`
-LFLAGS += `pkg-config opencv --libs`
-
-LFLAGS += -lboost_system -lboost_program_options -lboost_serialization
-LFLAGS += -lz -lrt
-LFLAGS += -lsnappy -lCharLS -lzstd -llz4 -llzo2
-
-
-CFLAGS += -fopenmp
-LFLAGS += -lgomp
-
-CFLAGS += -Ofast
-
-CFLAGS += -g
-
-CFLAGS += -I./ext
-LFLAGS += $(wildcard ./ext/*.a)
-
-
 #CFLAGS += -DNDEBUG
 #CFLAGS += -frename-registers -fopenmp
 #CFLAGS += -fno-unroll-loops

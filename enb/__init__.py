@@ -110,6 +110,7 @@ from . import fits
 from . import png
 from . import jpg
 from . import pgm
+from . import tiff
 from . import tarlite
 # Plugin and template support
 from . import plugins
@@ -124,7 +125,8 @@ isets.render_array_png = png.render_array_png
 icompression.FITSVersionTable = fits.FITSVersionTable
 icompression.FitsWrapperCodec = fits.FITSWrapperCodec
 icompression.PNGWrapperCodec = png.PNGWrapperCodec
-icompression.PGMWrapperCodec = pgm.PGMWrapperCodec
+icompression.PAMWrapperCodec = pgm.PAMWrapperCodec
+icompression.TIFFWrapperCodec = tiff.TIFFWrapperCodec
 
 # Setup to be run only when enb is imported in the main process
 if not parallel_ray.is_parallel_process():

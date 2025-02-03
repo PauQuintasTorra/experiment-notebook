@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Module to handle PGM (P5) and PPM (P6) images
+"""Module to handle PGM (P5), PPM (P6) and PAM (P7) images
 """
 __author__ = "Miguel Hernández-Cabronero"
 __since__ = "2020/04/08"
@@ -9,24 +9,22 @@ import sys
 import re
 import tempfile
 
-import imageio
-import numpngw
 import numpy as np
 
 import enb
 import enb.isets
 
 
-class PGMWrapperCodec(enb.icompression.WrapperCodec):
-    """Raw images are coded into PGM before compression with the wrapper,
-    and PGM is decoded to raw after decompression.
+class PAMWrapperCodec(enb.icompression.WrapperCodec):
+    """Raw images are coded into PAM before compression with the wrapper,
+    and PAM is decoded to raw after decompression.
     """
 
     # pylint: disable=abstract-method
 
     def compress(self, original_path: str, compressed_path: str, original_file_info=None):
         assert original_file_info["bytes_per_sample"] in [1, 2], \
-            "PGM only supported for 8 or 16 bit images"
+            "PAM only supported for 8 or 16 bit images"
         assert original_file_info["big_endian"], \
             f"Only big-endian samples are supported by {self.__class__.__name__}"
         img = enb.isets.load_array_bsq(
@@ -175,38 +173,56 @@ def read_pam(input_path, byteorder='>'):
     """Return image data from a raw PAM file as a numpy array."""
     with open(input_path, 'rb') as input_file:
         buffer = input_file.read()
-    
-    try:
-        header_match = re.search(
-            rb"(^P7\n(?:[A-Z]+\s+\d+\n)*ENDHDR\n)", buffer)
-        if not header_match:
-            raise ValueError(f"Not a valid PAM file: '{input_path}'")
-        
-        header = header_match.group(1).decode("utf-8")
-        metadata = dict(re.findall(r"(WIDTH|HEIGHT|DEPTH|MAXVAL) (\d+)", header))
-        
-        width = int(metadata["WIDTH"])
-        height = int(metadata["HEIGHT"])
-        depth = int(metadata["DEPTH"])
-        maxval = int(metadata["MAXVAL"])
-        
-    except (AttributeError, KeyError, ValueError) as ex:
-        raise ValueError(f"Invalid PAM header in '{input_path}'") from ex
-    
-    dtype = 'u1' if maxval < 256 else byteorder + 'u2'
-    offset = len(header_match.group(1))
-    
-    return np.frombuffer(buffer, dtype=dtype, count=width * height * depth, offset=offset)\
-            .reshape((height, width, depth))
 
+    try:
+        match = re.search(
+            rb"^P7\s+"
+            rb"(WIDTH\s+(\d+)\s*)" 
+            rb"(HEIGHT\s+(\d+)\s*)"
+            rb"(DEPTH\s+(\d+)\s*)" 
+            rb"(MAXVAL\s+(\d+)\s*)"
+            rb"(TUPLTYPE\s+\w+\s*)"
+            rb"ENDHDR\s",
+            buffer
+        )
+
+        if not match:
+            raise ValueError(f"Not a valid PAM file: '{input_path}'")
+
+        width = int(match.group(2))
+        height = int(match.group(4))
+        depth = int(match.group(6))
+        maxval = int(match.group(8))
+
+    except AttributeError as ex:
+        raise ValueError(f"Invalid PAM header in '{input_path}'") from ex
+
+    dtype = 'u1' if maxval < 256 else byteorder + 'u2'
+    
+    offset = match.end()
+
+    img =  np.frombuffer(
+        buffer,
+        dtype=dtype,
+        count=width * height * depth,
+        offset=offset
+    )
+    
+    if depth == 1:
+        return img.reshape((int(height), int(width)),
+                  order="F")
+
+    return img.reshape((int(depth), int(height), int(width)),
+              order="F").swapaxes(0, 2).swapaxes(0, 1)
 
 def write_pam(array, bytes_per_sample, output_path, byteorder=">"):
     """
     Write a 3D array indexed with [height, width, channels] into output_path with PAM format.
+    Supports up to 4 channels (Grayscale, RGB, RGBA).
     """
     array = np.squeeze(array)
     assert bytes_per_sample in [1, 2], f"bytes_per_sample={bytes_per_sample} not supported"
-    assert len(array.shape) == 3, "Only 3D arrays can be output as PAM"
+    assert len(array.shape) <= 4, "Only 3D arrays can be output as PAM (grayscale, alpha, RGB or RBGA)"
     assert (array.astype(int) - array < 2 * sys.float_info.epsilon).all(), "Only integer values can be stored in PAM"
     assert array.min() >= 0, "Only positive values can be stored in PAM"
     assert array.max() <= 2 ** (8 * bytes_per_sample) - 1, (
@@ -214,14 +230,23 @@ def write_pam(array, bytes_per_sample, output_path, byteorder=">"):
         f"(max is {array.max()}, bytes_per_sample={bytes_per_sample})"
     )
     
-    height, width, depth = array.shape
+    height, width = array.shape[:2]
+    depth = 1 if len(array.shape) == 2 else array.shape[2]
     maxval = (2 ** (8 * bytes_per_sample)) - 1
+
+    tupltype = {1: "GRAYSCALE", 2: "GRAYSCALE_ALPHA", 3: "RGB", 4: "RGB_ALPHA"}.get(depth, "UNKNOWN")
     
     with open(output_path, "wb") as output_file:
         output_file.write(
-            f"P7\nWIDTH {width}\nHEIGHT {height}\nDEPTH {depth}\nMAXVAL {maxval}\nTUPLTYPE UNKNOWN\nENDHDR\n".encode("utf-8")
+            f"P7\nWIDTH {width}\nHEIGHT {height}\nDEPTH {depth}\nMAXVAL {maxval}\nTUPLTYPE {tupltype}\nENDHDR\n".encode("utf-8")
         )
-        array.astype(f"{byteorder}u{bytes_per_sample}").tofile(output_file)
+        if depth == 1:
+            array.swapaxes(0, 1).astype(f"{byteorder}u{bytes_per_sample}").tofile(
+            output_file)
+        else:
+            enb.isets.dump_array_bip(
+                array=array, file_or_path=output_file, 
+                dtype=np.uint8 if bytes_per_sample == 1 else np.uint16)
 
 
 def pgm_to_raw(input_path, output_path):
