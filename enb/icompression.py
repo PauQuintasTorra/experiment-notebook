@@ -501,7 +501,7 @@ class QuantizationWrapperCodec(NearLosslessCodec):
         return f"{self.codec.label}, Q$_\\mathrm{{step}}=${self.param_dict['qstep']}"
 
 
-class LookUpTableWrapperCodec(NearLosslessCodec):
+class LookUpTableWrapperCodec(LosslessCodec):
     """Perform dynamic lookup table transformations before compressing and after decompressing 
     with a wrapped codec instance. The lookup table is generated based on the image data 
     and its bit depth.
