@@ -210,7 +210,7 @@ def read_pam(input_path, byteorder='>'):
     
     if depth == 1:
         return img.reshape((int(height), int(width)),
-                  order="F")
+                  order="C")
 
     return img.reshape((int(depth), int(height), int(width)),
               order="F").swapaxes(0, 2).swapaxes(0, 1)
@@ -241,7 +241,7 @@ def write_pam(array, bytes_per_sample, output_path, byteorder=">"):
             f"P7\nWIDTH {width}\nHEIGHT {height}\nDEPTH {depth}\nMAXVAL {maxval}\nTUPLTYPE {tupltype}\nENDHDR\n".encode("utf-8")
         )
         if depth == 1:
-            array.swapaxes(0, 1).astype(f"{byteorder}u{bytes_per_sample}").tofile(
+            array.astype(f"{byteorder}u{bytes_per_sample}").tofile(
             output_file)
         else:
             enb.isets.dump_array_bip(
