@@ -75,7 +75,7 @@ def get_status_output_time_memory(
     output_lines = output.splitlines()
     output = "\n".join(output_lines[:-1]
                        if not wall and len(output_lines) > 1 else output_lines)
-
+    
     if expected_status_value is not None and status != expected_status_value:
         raise InvocationError(
             f"status={status} != {expected_status_value}.\nInput=[{invocation}].\nOutput=[{output}]")
@@ -83,12 +83,12 @@ def get_status_output_time_memory(
     measured_memory_kb = None
     if memory_available:
         try:
-            m = re.fullmatch(r"u(\d+\.\d+)@s(\d+\.\d+)@m(\d+)", output_lines[-1])
+            u, s, m = re.findall(r"u(\d+\.\d+)@s(\d+\.\d+)@m(\d+)", output_lines[-1])[-1]
         except IndexError:
-            m = None
+            u, s, m = None, None, None
         if m is not None:
-            measured_time = float(m.group(1)) + float(m.group(2))
-            measured_memory_kb = int(m.group(3))
+            measured_time = float(u) + float(s)
+            measured_memory_kb = int(m)
         else:
             raise InvocationError(f"Output {output_lines} did not contain "
                                   f"a valid time signature")
