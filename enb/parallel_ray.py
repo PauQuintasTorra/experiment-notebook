@@ -168,6 +168,9 @@ class HeadNode:
                                    f"Output:{repr(output)}")
 
         with logger.info_context(f"Initializing ray client on local port {self.ray_port}"):
+            options._initial_module_names = list(
+                m.__name__ for m in sys.modules.values() if
+                hasattr(m, "__name__"))
             # pylint: disable=protected-access
             # A list of modules imported after initializing enb is passed to the
             # remote workers so that they can replicate the imports.
@@ -329,7 +332,8 @@ class RemoteNode:
     """Represent a remote node of the cluster, with tools to connect via ssh.
     """
     # pylint: disable=too-many-instance-attributes
-    remote_project_mount_path = os.path.join(enb.user_config_dir, "remote_mount")
+    remote_project_mount_path = "/home/deic/.config/enb/remote_mount" # TODO: fixme
+    # os.path.join(enb.user_config_dir, "remote_mount")
 
     def __init__(self, address, ssh_port, head_node, ssh_user=None,
                  local_ssh_file=None, cpu_limit=None,
