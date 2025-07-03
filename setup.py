@@ -81,9 +81,9 @@ with open("README.md", "r") as readme_file:
         install_requires=[
             "pathos", "appdirs", "deprecation", "jinja2>=3.1.2", "matplotlib",
             "numpngw",
-            "numpy", "pandas>=1.4.1", "imageio",
+            "numpy", "pandas>=1.4.1", "imageio", 
             "pdf2image", "psutil", "requests", "scipy", "sortedcontainers",
-            "astropy", "natsort", "rich", "h5py", "tiffile"],
+            "astropy", "natsort", "rich", "h5py", "hdf5plugin", "tables", "tiffile"],
 
         # This part determines the contents of the installed folder in your python's
         # site-packages location.

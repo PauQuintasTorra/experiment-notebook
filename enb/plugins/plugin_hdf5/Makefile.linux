@@ -1,0 +1,13 @@
+
+.PHONY: default
+default: zip hdf5 clean
+
+zip:
+	unzip hdf5-1.14.6.zip
+
+hdf5:
+	apt install ./hdf5-1.14.6.deb
+
+clean:
+	rm hdf5-1.14.6.deb
+	rm hdf5-1.14.6.zip
