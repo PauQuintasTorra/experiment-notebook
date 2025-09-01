@@ -42,7 +42,8 @@ class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec,
 
         return f"{original_path} {compressed_path} " \
                f"-q {self.param_dict['quality_0_to_100']} " \
-               f"-e {self.param_dict['compression_level']}"
+               f"-e {self.param_dict['compression_level']} " \
+               f"--quiet"
 
     def get_decompression_params(self, compressed_path, reconstructed_path, original_file_info):
         return f"{compressed_path} {reconstructed_path}"
