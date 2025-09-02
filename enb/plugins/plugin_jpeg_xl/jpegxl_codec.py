@@ -9,7 +9,7 @@ from enb import icompression
 
 class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec,
               icompression.PAMWrapperCodec):
-    def __init__(self, quality_0_to_100=100, compression_level=7,
+    def __init__(self, quality_0_to_100=100, compression_level=7, threads=0,
                  lossless=True,
                  compressor_path=os.path.join(os.path.dirname(__file__), "cjxl"),
                  decompressor_path=os.path.join(os.path.dirname(__file__), "djxl")):
@@ -22,8 +22,10 @@ class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec,
         (approx 1.2 Mp/s) under lossless mode
         :param compression_level: higher values mean slower compression
         :param lossless: if True, the modular mode of JPEG-XL is employed (in this case quality 100 is required)
+        :param threads: -1 use machine default, 0 do not use multithreading, >1 select number of threads
         """
         assert 3 <= compression_level <= 9
+        assert -1 <= threads
         assert 0 <= quality_0_to_100 <= 100
         assert (not lossless) or quality_0_to_100 == 100, f"Lossless mode can only be employed with quality 100"
 
@@ -32,7 +34,8 @@ class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec,
             param_dict=dict(
                 quality_0_to_100=quality_0_to_100,
                 compression_level=compression_level,
-                lossless=lossless),
+                lossless=lossless,
+                threads=threads),
             output_invocation_dir=None)
 
     def get_compression_params(self, original_path, compressed_path, original_file_info):
@@ -43,6 +46,7 @@ class JPEG_XL(icompression.LosslessCodec, icompression.LossyCodec,
         return f"{original_path} {compressed_path} " \
                f"-q {self.param_dict['quality_0_to_100']} " \
                f"-e {self.param_dict['compression_level']} " \
+               f"--num_threads={self.param_dict['threads']} " \
                f"--quiet"
 
     def get_decompression_params(self, compressed_path, reconstructed_path, original_file_info):
