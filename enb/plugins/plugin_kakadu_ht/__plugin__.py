@@ -2,7 +2,7 @@ import enb.plugins
 
 
 class KakaduPluginHT(enb.plugins.Plugin):
-    name = "kakadu"
+    name = "kakaduHT"
     label = "Wrappers for Kakadu JPEG 2000 High Througput"
     contrib_authors = ["Kakadu Software Pty. Ltd."]
     contrib_reference_urls = ["https://kakadusoftware.com"]
