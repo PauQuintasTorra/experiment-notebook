@@ -11,7 +11,7 @@ import hdf5plugin
 import tables
 import blosc2
 import blosc2_grok
-
+import os
 
 class AbstractHdf5Codec(enb.icompression.LosslessCodec):
     NOSHUFFLE = 0
@@ -36,6 +36,7 @@ class AbstractHdf5Codec(enb.icompression.LosslessCodec):
             self._compression(compressed_file, "dataset_1", array)
 
     def decompress(self, compressed_path, reconstructed_path, original_file_info=None):
+        
         with h5py.File(f'{compressed_path}', 'r') as compressed_file, open(reconstructed_path,
                                                                             "wb") as reconstructed_file:
             compressed_file = compressed_file.get('dataset_1')
@@ -195,36 +196,79 @@ class HDF5_GROK(AbstractHdf5Codec):
     """Apply the GROK algorithm using HDF5.
     """
 
-    blosc2_grok.set_params_defaults(
-        cod_format=blosc2_grok.GrkFileFmt.GRK_FMT_JP2
-    )
-
-
-    def __init__(self, param_dict=None):
+    def __init__(self, num_resolutions=1, param_dict=None):
+        param_dict = dict() if param_dict is None else param_dict
+        param_dict["num_resolutions"] = num_resolutions
+        self.nres = num_resolutions
 
         super().__init__(param_dict=param_dict)
     
-    def _compression(self, hdf5_file, dataset_name, image):
-        dataset = group.create_dataset(
-            dataset_name,
-            shape=image.shape,
-            dtype=image.dtype,
-            chunks=image.shape,
+    def create_blosc2_grok_stack_dataset(
+        self,
+        group: h5py.Group,
+        h5path: str,
+        data: np.ndarray,
+        rate: float,
+    ) -> h5py.Dataset:
+        """Store data compressed with blosc2&grok in a new dataset: group[h5path]
+
+        :param group: The root group where to create the dataset
+        :param h5path: The path of the new dataset in the group
+        :param data: The stack data to compress
+        :param rate: The requested compression ratio
+        """
+        dataset = group.create_dataset(  # Create the HDF5 dataset
+            h5path,
+            shape=data.shape,
+            dtype=data.dtype,
+            chunks=data.shape,
             allow_unknown_filter=True,
             compression=hdf5plugin.Blosc2(),
         )
-        hdf5_file.id.write_direct_chunk((0,0,0),
-            blosc2.asarray(
-                image,
-                chunks=image.shape,
-                blocks=(1,) + image.shape[1:],
-                cparams={
-                    'codec': blosc2.Codec.GROK,
-                    'filters': [],
-                    'splitmode': blosc2.SplitMode.NEVER_SPLIT,
-                },
-            ).schunk.to_cframe()
+        blosc2_array = self.b2_grok_compress_stack(data, rate)  # Compress the data with blosc2 & grok
+        # Write the compressed data to HDF5 using direct unk write
+        dataset.id.write_direct_chunk((0, 0, 0), blosc2_array.schunk.to_cframe())
+        return dataset
+
+    def b2_grok_compress_stack(self, data: np.ndarray, rate: float) -> blosc2.NDArray:
+        """Compress a 3D array with blosc2&grok as a stack of JPEG2000 images.
+
+        :param data: 3D array of data
+        :param rate: The requested compression ratio
+        """
+        blosc2_grok.set_params_defaults(
+            cod_format=blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
+            quality_mode="rates",
+            quality_layers=np.array([rate], dtype=np.float64),
+            num_resolutions=self.nres
         )
+        return blosc2.asarray(
+            data,
+            chunks=data.shape,
+            blocks=data.shape,  # Compress slice by slice
+            cparams={
+                'codec': blosc2.Codec.GROK,
+                'filters': [],
+                'splitmode': blosc2.SplitMode.NEVER_SPLIT,
+            },
+        )
+
+    
+    def _compression(self, hdf5_file, dataset_name, image):
+        image = image.reshape(image.shape[2], image.shape[1], image.shape[0])
+        self.create_blosc2_grok_stack_dataset(hdf5_file, dataset_name, image, rate=1)
+    
+
+    def decompress(self, compressed_path, reconstructed_path, original_file_info=None):
+        
+        with h5py.File(f'{compressed_path}', 'r') as compressed_file, open(reconstructed_path,
+                                                                            "wb") as reconstructed_file:
+            compressed_file = compressed_file.get('dataset_1')
+            compressed_file = np.array(compressed_file)
+            compressed_file = compressed_file.reshape(compressed_file.shape[2], compressed_file.shape[1], compressed_file.shape[0])
+
+            enb.isets.dump_array_bsq(array=compressed_file, file_or_path=reconstructed_file)
+
     @property
     def label(self):
         return f"HDF5_GROK"
