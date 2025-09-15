@@ -83,7 +83,8 @@ with open("README.md", "r") as readme_file:
             "numpngw",
             "numpy", "pandas>=1.4.1", "imageio", 
             "pdf2image", "psutil", "requests", "scipy", "sortedcontainers",
-            "astropy", "natsort", "rich", "h5py", "hdf5plugin", "tables", "tiffile"],
+            "astropy", "natsort", "rich", "h5py", "hdf5plugin",
+            "blosc2-grok", "tables", "tiffile"],
 
         # This part determines the contents of the installed folder in your python's
         # site-packages location.

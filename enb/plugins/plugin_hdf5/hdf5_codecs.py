@@ -9,6 +9,8 @@ import enb
 import h5py
 import hdf5plugin
 import tables
+import blosc2
+import blosc2_grok
 
 
 class AbstractHdf5Codec(enb.icompression.LosslessCodec):
@@ -147,7 +149,7 @@ class HDF5_BLOSC(AbstractHdf5Codec):
     MIN_COMPRESSION_LEVEL = 1
     MAX_COMPRESSION_LEVEL = 9
     DEFAULT_COMPRESSION_LEVEL = 5
-
+    
     def __init__(self, cname, shuffle, compression_level=DEFAULT_COMPRESSION_LEVEL, param_dict=None):
         assert self.MIN_COMPRESSION_LEVEL <= compression_level <= self.MAX_COMPRESSION_LEVEL
         assert cname in ["blosclz", "lz4", "lz4hc", "zlib", "zstd"]
@@ -165,6 +167,67 @@ class HDF5_BLOSC(AbstractHdf5Codec):
     def label(self):
         return f"HDF5_BLOSC"
 
+class HDF5_BLOSC2(AbstractHdf5Codec):
+    """Apply the BLOSC2 algorithm using HDF5.
+    """
+    MIN_COMPRESSION_LEVEL = 1
+    MAX_COMPRESSION_LEVEL = 9
+    DEFAULT_COMPRESSION_LEVEL = 5
+
+    def __init__(self, cname, shuffle, compression_level=DEFAULT_COMPRESSION_LEVEL, param_dict=None):
+        assert self.MIN_COMPRESSION_LEVEL <= compression_level <= self.MAX_COMPRESSION_LEVEL
+        assert cname in ["blosclz", "lz4", "lz4hc", "zlib", "zstd", "grok"]
+
+        param_dict = dict() if param_dict is None else param_dict
+        param_dict["compression_level"] = compression_level
+        param_dict["cname"] = cname
+        super().__init__(shuffle=shuffle, param_dict=param_dict)
+    
+    def _compression(self, hdf5_file, dataset_name, image):
+        hdf5_file.create_dataset(dataset_name, data=image, compression=hdf5plugin.Blosc2(cname=self.param_dict["cname"], 
+                                    clevel=self.param_dict["compression_level"], shuffle=self.param_dict["shuffle"]))
+
+    @property
+    def label(self):
+        return f"HDF5_BLOSC2"
+
+class HDF5_GROK(AbstractHdf5Codec):
+    """Apply the GROK algorithm using HDF5.
+    """
+
+    blosc2_grok.set_params_defaults(
+        cod_format=blosc2_grok.GrkFileFmt.GRK_FMT_JP2
+    )
+
+
+    def __init__(self, param_dict=None):
+
+        super().__init__(param_dict=param_dict)
+    
+    def _compression(self, hdf5_file, dataset_name, image):
+        dataset = group.create_dataset(
+            dataset_name,
+            shape=image.shape,
+            dtype=image.dtype,
+            chunks=image.shape,
+            allow_unknown_filter=True,
+            compression=hdf5plugin.Blosc2(),
+        )
+        hdf5_file.id.write_direct_chunk((0,0,0),
+            blosc2.asarray(
+                image,
+                chunks=image.shape,
+                blocks=(1,) + image.shape[1:],
+                cparams={
+                    'codec': blosc2.Codec.GROK,
+                    'filters': [],
+                    'splitmode': blosc2.SplitMode.NEVER_SPLIT,
+                },
+            ).schunk.to_cframe()
+        )
+    @property
+    def label(self):
+        return f"HDF5_GROK"
 
 class HDF5_BZIP2(enb.icompression.LosslessCodec):
     """Apply the BZIP2 algorithm using HDF5.
