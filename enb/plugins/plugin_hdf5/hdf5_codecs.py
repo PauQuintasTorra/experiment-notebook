@@ -255,7 +255,7 @@ class HDF5_GROK(AbstractHdf5Codec):
 
     
     def _compression(self, hdf5_file, dataset_name, image):
-        image = image.reshape(image.shape[2], image.shape[1], image.shape[0])
+        image = image.swapaxes(0,2)
         self.create_blosc2_grok_stack_dataset(hdf5_file, dataset_name, image, rate=1)
     
 
@@ -264,8 +264,7 @@ class HDF5_GROK(AbstractHdf5Codec):
         with h5py.File(f'{compressed_path}', 'r') as compressed_file, open(reconstructed_path,
                                                                             "wb") as reconstructed_file:
             compressed_file = compressed_file.get('dataset_1')
-            compressed_file = np.array(compressed_file)
-            compressed_file = compressed_file.reshape(compressed_file.shape[2], compressed_file.shape[1], compressed_file.shape[0])
+            compressed_file = np.array(compressed_file).swapaxes(0,2)
 
             enb.isets.dump_array_bsq(array=compressed_file, file_or_path=reconstructed_file)
 
