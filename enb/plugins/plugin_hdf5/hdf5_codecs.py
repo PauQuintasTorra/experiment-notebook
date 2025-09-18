@@ -214,7 +214,6 @@ class HDF5_GROK(AbstractHdf5Codec):
         :param group: The root group where to create the dataset
         :param h5path: The path of the new dataset in the group
         :param data: The stack data to compress
-        :param rate: The requested compression ratio
         """
         dataset = group.create_dataset(  # Create the HDF5 dataset
             h5path,
@@ -224,7 +223,7 @@ class HDF5_GROK(AbstractHdf5Codec):
             allow_unknown_filter=True,
             compression=hdf5plugin.Blosc2(),
         )
-        blosc2_array = self.b2_grok_compress_stack(data, rate)  # Compress the data with blosc2 & grok
+        blosc2_array = self.b2_grok_compress_stack(data)  # Compress the data with blosc2 & grok
         # Write the compressed data to HDF5 using direct unk write
         dataset.id.write_direct_chunk((0, 0, 0), blosc2_array.schunk.to_cframe())
         return dataset
@@ -233,7 +232,6 @@ class HDF5_GROK(AbstractHdf5Codec):
         """Compress a 3D array with blosc2&grok as a stack of JPEG2000 images.
 
         :param data: 3D array of data
-        :param rate: The requested compression ratio
         """
         blosc2_grok.set_params_defaults(
             cod_format=blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
