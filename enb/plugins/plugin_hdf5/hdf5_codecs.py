@@ -208,7 +208,6 @@ class HDF5_GROK(AbstractHdf5Codec):
         group: h5py.Group,
         h5path: str,
         data: np.ndarray,
-        rate: float,
     ) -> h5py.Dataset:
         """Store data compressed with blosc2&grok in a new dataset: group[h5path]
 
@@ -230,7 +229,7 @@ class HDF5_GROK(AbstractHdf5Codec):
         dataset.id.write_direct_chunk((0, 0, 0), blosc2_array.schunk.to_cframe())
         return dataset
 
-    def b2_grok_compress_stack(self, data: np.ndarray, rate: float) -> blosc2.NDArray:
+    def b2_grok_compress_stack(self, data: np.ndarray) -> blosc2.NDArray:
         """Compress a 3D array with blosc2&grok as a stack of JPEG2000 images.
 
         :param data: 3D array of data
@@ -238,8 +237,6 @@ class HDF5_GROK(AbstractHdf5Codec):
         """
         blosc2_grok.set_params_defaults(
             cod_format=blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
-            quality_mode="rates",
-            quality_layers=np.array([rate], dtype=np.float64),
             num_resolutions=self.nres
         )
         return blosc2.asarray(
@@ -256,7 +253,7 @@ class HDF5_GROK(AbstractHdf5Codec):
     
     def _compression(self, hdf5_file, dataset_name, image):
         image = image.swapaxes(0,2)
-        self.create_blosc2_grok_stack_dataset(hdf5_file, dataset_name, image, rate=1)
+        self.create_blosc2_grok_stack_dataset(hdf5_file, dataset_name, image)
     
 
     def decompress(self, compressed_path, reconstructed_path, original_file_info=None):
