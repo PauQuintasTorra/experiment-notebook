@@ -978,7 +978,8 @@ class CompressionExperiment(enb.experiment.Experiment):
                         = max(kb if kb is not None else -1
                               for kb in measured_memory)
                 except Exception as ex:
-                    os.remove(tmp_reconstructed_path)
+                    if os.path.exists(tmp_reconstructed_path):
+                        os.remove(tmp_reconstructed_path)
                     raise ex
 
             return self._decompression_results
