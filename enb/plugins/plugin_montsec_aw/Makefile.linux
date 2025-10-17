@@ -1,0 +1,5 @@
+all:
+	unzip montsecAW.zip
+
+clean:
+	rm -rf lz4-1.10.0 lz4
