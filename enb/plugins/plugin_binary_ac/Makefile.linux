@@ -1,0 +1,13 @@
+
+.PHONY: default
+default: zip ec clean
+
+zip:
+	unzip binary-entropy-coder.zip
+
+ec:
+	cd binary-entropy-coder && make && mv bin/arithmetic ..
+
+clean:
+	rm binary-entropy-coder.zip
+	rm -r binary-entropy-coder
