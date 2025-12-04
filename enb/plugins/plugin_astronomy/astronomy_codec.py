@@ -10,10 +10,11 @@ import os
 
 class Astronomy(enb.icompression.LosslessCodec, enb.icompression.WrapperCodec):
 
-    def __init__(self, binary=os.path.join(os.path.dirname(__file__), "compressor"), cm=4, weights=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,333,333,0,0,0,0,0,334]):
+    def __init__(self, binary=os.path.join(os.path.dirname(__file__), "compressor"), cm=4, weights=None):
         assert 0 <= cm <= 4
         assert len(weights) == 32
         assert sum(weights) == 1000
+        assert weights != None
 
         param_dict = dict()
         param_dict["cm"] = cm
@@ -30,8 +31,8 @@ class Astronomy(enb.icompression.LosslessCodec, enb.icompression.WrapperCodec):
                 + (" WEIGHTS " + str(self.param_dict["w"])))
 
     def get_compression_params(self, original_path, compressed_path, original_file_info):
-        return f"cmp {original_path} {compressed_path} {self.param_dict['cm']} {','.join(map(str, self.param_dict['w']))} "
+        return f"cmp {original_path} {compressed_path} {self.param_dict['cm']} {self.param_dict['w']}"
 
     def get_decompression_params(self, compressed_path, reconstructed_path, original_file_info):
-        return f"dec {compressed_path} {reconstructed_path} {self.param_dict['cm']} {','.join(map(str, self.param_dict['w']))} "
+        return f"dec {compressed_path} {reconstructed_path} {self.param_dict['cm']} {self.param_dict['w']}"
 
