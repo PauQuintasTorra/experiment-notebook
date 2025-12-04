@@ -6,9 +6,9 @@ __since__ = "2025/04/12"
 
 import numpy as np
 import enb
+import os
 
-
-class AstronomyCodec(enb.icompression.LosslessCodec):
+class Astronomy(enb.icompression.LosslessCodec):
 
     def __init__(self, binary=os.path.join(os.path.dirname(__file__), "compressor"), cm=4, weights=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,333,333,0,0,0,0,0,334]):
         assert 0 <= cm <= 4
