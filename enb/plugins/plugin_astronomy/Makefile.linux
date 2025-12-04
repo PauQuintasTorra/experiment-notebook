@@ -6,9 +6,7 @@ zip:
 	unzip Astronomy-Compressor.zip
 
 astronomy:
-	cd Astronomy-Compressor
-	make
-	mv bin/compressor ..
+	cd Astronomy-Compressor && make && mv bin/compressor ..
 
 clean:
 	rm Astronomy-Compressor.zip
