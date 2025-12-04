@@ -1,0 +1,15 @@
+
+.PHONY: default
+default: zip astronomy clean
+
+zip:
+	unzip Astronomy-Compressor.zip
+
+astronomy:
+	cd Astronomy-Compressor
+	make
+	mv bin/compressor ..
+
+clean:
+	rm Astronomy-Compressor.zip
+	rm -r Astronomy-Compressor
