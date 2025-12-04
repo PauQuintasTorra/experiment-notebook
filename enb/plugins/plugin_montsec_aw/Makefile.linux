@@ -1,5 +1,8 @@
 all:
 	unzip montsecAW.zip
+	mkdir bin && make && mv bin/* .
+	rm -rf montsecAW.zip src
 
 clean:
-	rm -rf lz4-1.10.0 lz4
+	rm -rf montsecAW.zip src
+    
