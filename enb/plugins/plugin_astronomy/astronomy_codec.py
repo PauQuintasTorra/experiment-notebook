@@ -15,7 +15,7 @@ class Astronomy(enb.icompression.LosslessCodec):
         assert len(weights) == 32
         assert sum(weights) == 1000
 
-        param_dict = dict() if param_dict is None else param_dict
+        param_dict = dict()
         param_dict["cm"] = cm
         param_dict["w"] = weights
         super().__init__(compressor_path=binary, decompressor_path=binary, param_dict=param_dict)
