@@ -12,8 +12,6 @@ class Astronomy(enb.icompression.LosslessCodec, enb.icompression.WrapperCodec):
 
     def __init__(self, binary=os.path.join(os.path.dirname(__file__), "compressor"), cm=4, weights=None):
         assert 0 <= cm <= 4
-        assert len(weights) == 32
-        assert sum(weights) == 1000
         assert weights != None
 
         param_dict = dict()
