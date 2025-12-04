@@ -30,8 +30,8 @@ class Astronomy(enb.icompression.LosslessCodec, enb.icompression.WrapperCodec):
                 + (" WEIGHTS " + str(self.param_dict["w"])))
 
     def get_compression_params(self, original_path, compressed_path, original_file_info):
-        return f"cmp {original_path} {compressed_path} {self.param_dict['cm']} {','.join(map(str, lst))} "
+        return f"cmp {original_path} {compressed_path} {self.param_dict['cm']} {','.join(map(str, self.param_dict['w']))} "
 
     def get_decompression_params(self, compressed_path, reconstructed_path, original_file_info):
-        return f"dec {compressed_path} {reconstructed_path} {self.param_dict['cm']} {','.join(map(str, lst))} "
+        return f"dec {compressed_path} {reconstructed_path} {self.param_dict['cm']} {','.join(map(str, self.param_dict['w']))} "
 
