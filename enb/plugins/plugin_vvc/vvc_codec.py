@@ -38,8 +38,8 @@ class VVC(icompression.LittleEndianWrapper):
         param_dict = dict(chroma_format=chroma_format, QP=qp, config_path=config_path)
         icompression.WrapperCodec.__init__(
             self,
-            compressor_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "EncoderAppStatic"),
-            decompressor_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "DecoderAppStatic"),
+            compressor_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "EncoderAppStaticd"),
+            decompressor_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "DecoderAppStaticd"),
             param_dict=param_dict)
 
     def get_compression_params(self, original_path, compressed_path, original_file_info):
